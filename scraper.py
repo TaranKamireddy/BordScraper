@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.options import Options
 from datetime import datetime, timedelta, timezone, date, time
 from time import sleep
 import json
@@ -12,6 +13,13 @@ DELAY = 0 #delay for loading pages
 LOAD_MORE = 2 #number of times to load more events
 GROUP = "Purdue" #change between "Purdue" and "IU"
 DAYS_TO_SEARCH = 31
+
+wd_options = Options()
+# wd_options.add_argument("-headless")
+
+req_headers = {
+  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.10 Safari/605.1.1',
+}
 
 # manual input
 # search_date = {"Month":11, "Day":24, "Year":2025}
@@ -47,7 +55,7 @@ catperkToTag = {
 }
 
 def main():
-  driver = webdriver.Firefox()
+  driver = webdriver.Firefox(options=wd_options)
 
   iuspot = f'https://thespot.iupui.edu/events?customdate={startDate.strftime("%a %b %d %Y")} 00%3A00%3A00 GMT-0500&query={query}'
   purdue = f'https://boilerlink.purdue.edu/events?customdate={startDate.strftime("%a %b %d %Y")} 00%3A00%3A00 GMT-0500&query={query}'
@@ -55,7 +63,7 @@ def main():
   link = purdue if GROUP == 'Purdue' else iuspot
 
   print(f'Searching through: {link}')
-  
+
   #load event page
   driver.get(link)
 
@@ -106,11 +114,11 @@ async def postEvents(events):
     batch = {"events": events["events"][i*sizeLimit:(i+1)*sizeLimit]}
     writeOutput(batch,f"batch{i}.json")
     try:
-      req = requests.post(route, json=batch)#, verify='campusbord-com-chain.pem')
+      req = requests.post(route, headers=req_headers, json=batch)#, verify='campusbord-com-chain.pem')
       try:
         print(f"\n{req.json()}")
       except:
-        print(f"\n{req.status_code},  {req.reason}")
+        print(f"\n{req.status_code},  {req.reason}, {req.headers}")
     except:
       print("\nRequest Failed")
 
@@ -119,10 +127,10 @@ def parseLinks(links):
 
   for link in links:
     print(f'\nParsing through: {link}')
-    driver = webdriver.Firefox()
+    driver = webdriver.Firefox(options=wd_options)
     driver.get(link)
     sleep(DELAY)
-    
+
     #loading raw content
     loadedAll = False
     failedToLoad = 0
@@ -228,7 +236,7 @@ def parseLinks(links):
 def formatEvents(events):
   for event in events["events"]:
     event["tags"] = set()
-    
+
     #convert catergories to tags
     for tag in event["categories"]:
       if tag in catperkToTag:
@@ -253,7 +261,7 @@ def formatEvents(events):
       event['imageType'] = req.headers['Content-Type']
 
   return events
-    
+
 def toUnix(date):
   formatDate = "%A, %B %d %Y at %I:%M %p"
   formatDate = datetime.strptime(date, formatDate)
