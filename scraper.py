@@ -9,9 +9,11 @@ import asyncio
 import pytz
 
 DELAY = 0 #delay for loading pages
-LOAD_MORE = 2 #number of times to load more events
+LOAD_MORE = 5 #number of times to load more events
 GROUP = "Purdue" #change between "Purdue" and "IU"
-DAYS_TO_SEARCH = 31
+DAYS_TO_SEARCH = 100
+SIZE_LIMIT = 5
+
 
 # manual input
 # search_date = {"Month":11, "Day":24, "Year":2025}
@@ -44,6 +46,11 @@ catperkToTag = {
   "Athletic Contest/Sporting Event": "Sport",
   "Food Fundraiser": "Food",
   "Training/Workshop/Learning Opportunity": "Career"
+}
+
+orgToImg = {
+  "Purdue Badminton Club Indianapolis": "https://campusbord.com/api/event/img/c29413a4-a10c-47ae-a9d4-ef99b39265e0",
+  "Music Club At Purdue Indianapolis": "https://se-images.campuslabs.com/clink/images/035bd6cc-d857-4152-aecc-9e8dbf97e210d11dd238-17f6-451f-98c0-8422b561e07e.jpeg?preset=med-sq"
 }
 
 def main():
@@ -91,6 +98,8 @@ def main():
   #parse event links
   events = parseLinks(links)
 
+  writeOutput(events)
+
   #format events
   events = formatEvents(events)
 
@@ -100,8 +109,7 @@ def main():
   #write output to json (for debugging)
   writeOutput(events)
 
-async def postEvents(events):
-  sizeLimit = 15
+async def postEvents(events, sizeLimit=SIZE_LIMIT):
   for i in range(len(events["events"])//sizeLimit + 1):
     batch = {"events": events["events"][i*sizeLimit:(i+1)*sizeLimit]}
     writeOutput(batch,f"batch{i}.json")
@@ -244,8 +252,12 @@ def formatEvents(events):
 
     #default image
     if "campuslabsengage" in event["image"]:
-      del event["image"]
-    else:
+      if event["org"] in orgToImg:
+        event["image"] = orgToImg[event["org"]]
+      else:
+        del event["image"]
+
+    if "image" in event:
     #not default image
       req = requests.get(event['image'])
       b64 = base64.b64encode(req._content).decode('ASCII')
