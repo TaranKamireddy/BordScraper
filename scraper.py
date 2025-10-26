@@ -17,7 +17,7 @@ SIZE_LIMIT = 5
 
 
 wd_options = Options()
-# wd_options.add_argument("-headless")
+# wd_options.add_argument("-headless") #run as headless mode
 
 req_headers = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.10 Safari/605.1.1',
@@ -106,6 +106,7 @@ def main():
   #parse event links
   events = parseLinks(links)
 
+  #backup write incase format or post fails
   writeOutput(events)
 
   #format events
