@@ -57,7 +57,7 @@ catperkToTag = {
 }
 
 orgToImg = {
-  "Purdue Badminton Club Indianapolis": "https://campusbord.com/api/event/img/c29413a4-a10c-47ae-a9d4-ef99b39265e0",
+  "Purdue Badminton Club Indianapolis": "https://ppatour.com/wp-content/uploads/2024/05/shutterstock_2302308577.jpg",
   "Music Club At Purdue Indianapolis": "https://se-images.campuslabs.com/clink/images/035bd6cc-d857-4152-aecc-9e8dbf97e210d11dd238-17f6-451f-98c0-8422b561e07e.jpeg?preset=med-sq"
 }
 
